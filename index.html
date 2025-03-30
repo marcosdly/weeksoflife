@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <body>
+    <div id="root">
+      <header>
+        <h1>Weeks of Life</h1>
+        <div>
+          <label for="year-input">Year</label>
+          <input type="number" id="year-input" />
+          <label for="day-select">Day</label>
+          <select id="day-select"></select>
+          <label for="month-select">Month</label>
+          <select id="month-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+      </header>
+      <main>
+        <table>
+          <tbody></tbody>
+        </table>
+      </main>
+    </div>
+    <script>
+      const yearInput = document.querySelector("#year-input");
+      const monthSelect = document.querySelector("#month-select");
+      const daySelect = document.querySelector("#day-select");
+      const now = new Date().getFullYear();
+      yearInput.max = now;
+      yearInput.min = now - 100;
+
+      const dayOptions = [];
+      for (let i = 1; i <= 31; ++i) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        dayOptions.push(option);
+        daySelect.add(option);
+      }
+
+      function updateDaySelectOptions(event) {
+        const month = parseInt(event.target.value);
+        if (month === 2) {
+          if (daySelect.childElementCount === 28) return;
+          try {
+            dayOptions[28].remove();
+            dayOptions[29].remove();
+            dayOptions[30].remove();
+          } catch {}
+          return;
+        }
+        if ([11, 4, 6, 9].includes(month)) {
+          if (daySelect.childElementCount === 30) return;
+          try {
+            dayOptions[30].remove();
+          } catch {}
+          if (!daySelect.children.includes(dayOptions[28])) {
+            daySelect.add(dayOptions[28]);
+          }
+          if (!daySelect.children.includes(dayOptions[29])) {
+            daySelect.add(dayOptions[29]);
+          }
+          return;
+        }
+        if (daySelect.childElementCount === 31) return;
+        if (!daySelect.children.item(28)) {
+          daySelect.add(dayOptions[28]);
+        }
+        if (!daySelect.children.item(29)) {
+          daySelect.add(dayOptions[29]);
+        }
+        if (!daySelect.children.item(30)) {
+          daySelect.add(dayOptions[30]);
+        }
+      }
+
+      monthSelect.addEventListener("change", updateDaySelectOptions);
+
+      const tbody = document.querySelector("tbody");
+      const [years, weeks] = [100, 52];
+      for (let i = 0; i < years; ++i) {
+        const tr = document.createElement("tr");
+        for (let j = 0; j < weeks; ++j) {
+          const td = document.createElement("td");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          td.appendChild(checkbox);
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+
+      var weekMillisFactor = 1000 * 60 * 60 * 24 * 7;
+      function checkBirthDate(event) {
+        if (!(yearInput.value && daySelect.value && monthSelect.value)) return;
+        const birthEpoch = new Date(
+          Date.UTC(
+            parseInt(yearInput.value),
+            parseInt(monthSelect.value),
+            parseInt(daySelect.value),
+            0,
+            0,
+            0,
+          ),
+        ).valueOf();
+        const nowEpoch = new Date(Date.UTC(0, 0, 0, 0, 0, 0)).valueOf();
+        const millis = Math.abs(nowEpoch) - Math.abs(birthEpoch);
+        if (millis < weekMillisFactor) return;
+        const weeks = Math.floor(millis / weekMillisFactor);
+        const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
+        for (let i = 0; i < checkboxes.length; ++i) {
+          if (i < weeks) checkboxes.item(i).setAttribute("checked", "");
+          else checkboxes.item(i).removeAttribute("checked");
+        }
+      }
+
+      yearInput.addEventListener("change", checkBirthDate);
+      monthSelect.addEventListener("change", checkBirthDate);
+      daySelect.addEventListener("change", checkBirthDate);
+    </script>
+  </body>
+</html>
