@@ -36,9 +36,11 @@
       const yearInput = document.querySelector("#year-input");
       const monthSelect = document.querySelector("#month-select");
       const daySelect = document.querySelector("#day-select");
-      const now = new Date().getFullYear();
-      yearInput.max = now;
-      yearInput.min = now - 100;
+      {
+        const now = new Date().getFullYear();
+        yearInput.max = now;
+        yearInput.min = now - 100;
+      }
 
       const dayOptions = [];
       for (let i = 1; i <= 31; ++i) {
@@ -49,9 +51,23 @@
         daySelect.add(option);
       }
 
+      function monthToDays(month) {
+        switch (month) {
+          case 2:
+            return 28;
+          case 11:
+          case 4:
+          case 6:
+          case 9:
+            return 30;
+          default:
+            return 31;
+        }
+      }
+
       function updateDaySelectOptions(event) {
         const month = parseInt(event.target.value);
-        if (month === 2) {
+        if (monthToDays(month) === 2) {
           if (daySelect.childElementCount === 28) return;
           try {
             dayOptions[28].remove();
@@ -60,7 +76,7 @@
           } catch {}
           return;
         }
-        if ([11, 4, 6, 9].includes(month)) {
+        if (monthToDays(month) === 30) {
           if (daySelect.childElementCount === 30) return;
           try {
             dayOptions[30].remove();
@@ -87,13 +103,15 @@
 
       monthSelect.addEventListener("change", updateDaySelectOptions);
 
+      const checkboxes = [];
       const tbody = document.querySelector("tbody");
-      const [years, weeks] = [100, 52];
-      for (let i = 0; i < years; ++i) {
+      const [maxYears, maxWeeksPerYear] = [100, 52];
+      for (let i = 0; i < maxYears; ++i) {
         const tr = document.createElement("tr");
-        for (let j = 0; j < weeks; ++j) {
+        for (let j = 0; j < maxWeeksPerYear; ++j) {
           const td = document.createElement("td");
           const checkbox = document.createElement("input");
+          checkboxes.push(checkbox);
           checkbox.type = "checkbox";
           td.appendChild(checkbox);
           tr.appendChild(td);
@@ -101,27 +119,32 @@
         tbody.appendChild(tr);
       }
 
-      var weekMillisFactor = 1000 * 60 * 60 * 24 * 7;
       function checkBirthDate(event) {
         if (!(yearInput.value && daySelect.value && monthSelect.value)) return;
-        const birthEpoch = new Date(
-          Date.UTC(
-            parseInt(yearInput.value),
-            parseInt(monthSelect.value),
-            parseInt(daySelect.value),
-            0,
-            0,
-            0,
-          ),
-        ).valueOf();
-        const nowEpoch = new Date(Date.UTC(0, 0, 0, 0, 0, 0)).valueOf();
-        const millis = Math.abs(nowEpoch) - Math.abs(birthEpoch);
-        if (millis < weekMillisFactor) return;
-        const weeks = Math.floor(millis / weekMillisFactor);
-        const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
-        for (let i = 0; i < checkboxes.length; ++i) {
-          if (i < weeks) checkboxes.item(i).setAttribute("checked", "");
-          else checkboxes.item(i).removeAttribute("checked");
+        const birth = {
+          year: parseInt(yearInput.value),
+          month: parseInt(monthSelect.value),
+          day: parseInt(daySelect.value),
+        };
+        const now = {};
+        {
+          const _nowDate = new Date();
+          now.year = _nowDate.getUTCFullYear();
+          now.month = _nowDate.getUTCMonth() + 1; // month is zero-indexed (what????)
+          now.day = _nowDate.getUTCDate();
+        }
+        let days = monthToDays(birth.month) - birth.day; // offset to closest month (ceil)
+        for (let i = birth.month + 1; i <= 12; ++i) days += monthToDays(i); // add days up to next year
+        days += (now.year - birth.year - 1) * 365; // add whole years
+        for (let i = 1; i <= now.month; ++i) days += monthToDays(i); // add current time's months
+        days += now.day; // add current time's days
+        const weeks = Math.min(Math.floor(days / 7), checkboxes.length);
+        for (let i = 1; i <= checkboxes.length; ++i) {
+          if (i <= weeks) {
+            checkboxes[i].setAttribute("checked", "");
+          } else {
+            checkboxes[i].removeAttribute("checked");
+          }
         }
       }
 
