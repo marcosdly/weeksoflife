@@ -36,11 +36,6 @@
       const yearInput = document.querySelector("#year-input");
       const monthSelect = document.querySelector("#month-select");
       const daySelect = document.querySelector("#day-select");
-      {
-        const now = new Date().getFullYear();
-        yearInput.max = now;
-        yearInput.min = now - 100;
-      }
 
       const dayOptions = [];
       for (let i = 1; i <= 31; ++i) {
@@ -119,6 +114,15 @@
         tbody.appendChild(tr);
       }
 
+      function getNowDate() {
+        const _nowDate = new Date();
+        return {
+          year: _nowDate.getUTCFullYear(),
+          month: _nowDate.getUTCMonth() + 1, // month is zero-indexed (what????)
+          day: _nowDate.getUTCDate(),
+        };
+      }
+
       function checkBirthDate(event) {
         if (!(yearInput.value && daySelect.value && monthSelect.value)) return;
         const birth = {
@@ -126,13 +130,7 @@
           month: parseInt(monthSelect.value),
           day: parseInt(daySelect.value),
         };
-        const now = {};
-        {
-          const _nowDate = new Date();
-          now.year = _nowDate.getUTCFullYear();
-          now.month = _nowDate.getUTCMonth() + 1; // month is zero-indexed (what????)
-          now.day = _nowDate.getUTCDate();
-        }
+        const now = getNowDate();
         let days = monthToDays(birth.month) - birth.day; // offset to closest month (ceil)
         for (let i = birth.month + 1; i <= 12; ++i) days += monthToDays(i); // add days up to next year
         days += (now.year - birth.year - 1) * 365; // add whole years
@@ -151,6 +149,15 @@
       yearInput.addEventListener("change", checkBirthDate);
       monthSelect.addEventListener("change", checkBirthDate);
       daySelect.addEventListener("change", checkBirthDate);
+
+      addEventListener("load", function (event) {
+        const now = getNowDate();
+        yearInput.max = now.year;
+        yearInput.min = now.year - 100;
+        yearInput.value = now.year;
+        monthSelect.value = now.month;
+        daySelect.value = now.day;
+      });
     </script>
   </body>
 </html>
