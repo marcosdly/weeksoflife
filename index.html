@@ -138,7 +138,7 @@
         days += (now.year - birth.year - 1) * 365; // add whole years
         for (let i = 1; i <= now.month; ++i) days += monthToDays(i); // add current time's months
         days += now.day; // add current time's days
-        const weeks = Math.min(Math.floor(days / 7), checkboxes.length);
+        const weeks = Math.floor(days / 7);
         for (let i = 1; i <= checkboxes.length; ++i) {
           if (i <= weeks) {
             checkboxes[i].setAttribute("checked", "");
