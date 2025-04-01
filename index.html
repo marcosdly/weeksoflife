@@ -145,11 +145,21 @@
           limitDayOptions(monthToDays(birth.month));
         }
         // endregion
-        let days = monthToDays(birth.month) - birth.day; // offset to closest month (ceil)
-        for (let i = birth.month + 1; i <= 12; ++i) days += monthToDays(i); // add days up to next year
-        days += (now.year - birth.year - 1) * 365; // add whole years
-        for (let i = 1; i <= now.month; ++i) days += monthToDays(i); // add current time's months
-        days += now.day; // add current time's days
+        let days = 0;
+        if (birth.year === now.year && birth.month >= now.month && birth.day >= now.day) {
+          ; // days = 0, so instead, do an explicit noop
+        } else if (birth.year === now.year && birth.month === now.month) {
+          days = now.day - birth.day;
+        } else if (birth.year === now.year) {
+          days = now.day - birth.day;
+          for (let i = birth.month; i < now.month; ++i) days += monthToDays(i);
+        } else {
+          days = monthToDays(birth.month) - birth.day; // offset to closest month (ceil)
+          for (let i = birth.month + 1; i <= 12; ++i) days += monthToDays(i); // add days up to next year
+          days += (now.year - birth.year - 1) * 365; // add whole years
+          for (let i = 1; i <= now.month; ++i) days += monthToDays(i); // add current time's months
+          days += now.day; // add current time's days
+        }
         const weeks = Math.floor(days / 7);
         for (let i = 0; i < checkboxes.length; ++i) {
           if (i < weeks) {
