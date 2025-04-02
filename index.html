@@ -4,7 +4,7 @@
     <div id="root">
       <header>
         <h1>Weeks of Life</h1>
-        <div>
+        <div id="input-container">
           <label for="year-input">Year</label>
           <input type="number" id="year-input" />
           <label for="day-select">Day</label>
@@ -91,10 +91,7 @@
         const tr = document.createElement("tr");
         for (let j = 0; j < maxWeeksPerYear; ++j) {
           const td = document.createElement("td");
-          const checkbox = document.createElement("input");
-          checkboxes.push(checkbox);
-          checkbox.type = "checkbox";
-          td.appendChild(checkbox);
+          checkboxes.push(td);
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
@@ -146,8 +143,12 @@
         }
         // endregion
         let days = 0;
-        if (birth.year === now.year && birth.month >= now.month && birth.day >= now.day) {
-          ; // days = 0, so instead, do an explicit noop
+        if (
+          birth.year === now.year &&
+          birth.month >= now.month &&
+          birth.day >= now.day
+        ) {
+          // days = 0, so instead, do an explicit noop
         } else if (birth.year === now.year && birth.month === now.month) {
           days = now.day - birth.day;
         } else if (birth.year === now.year) {
@@ -163,9 +164,9 @@
         const weeks = Math.floor(days / 7);
         for (let i = 0; i < checkboxes.length; ++i) {
           if (i < weeks) {
-            checkboxes[i].setAttribute("checked", "");
+            checkboxes[i].setAttribute("data-checked", "");
           } else {
-            checkboxes[i].removeAttribute("checked");
+            checkboxes[i].removeAttribute("data-checked");
           }
         }
       }
@@ -184,5 +185,119 @@
         checkBirthDate();
       });
     </script>
+    <style>
+      :root {
+        font-size: 16px;
+      }
+
+      body {
+        background-color: #e2e2e2;
+      }
+
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      #root {
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+        --week-check-size: 12px;
+        --big-margin: 7px;
+        --small-margin: 2px;
+        --border-width: 2px;
+        --separator-margin: 1rem;
+      }
+
+      h1 {
+        text-align: center;
+        margin: var(--separator-margin) 0;
+      }
+
+      #input-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: var(--separator-margin);
+        margin-bottom: var(--separator-margin);
+      }
+
+      #year-input {
+        width: 100px;
+      }
+
+      #day-select,
+      #month-select {
+        width: 50px;
+      }
+
+      label {
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+
+      h1,
+      label {
+        font-family: "Open Sans", "Droid Sans", "Arial", sans-serif;
+      }
+
+      #year-input,
+      #day-select,
+      #month-select {
+        height: 25px;
+        text-align: center;
+        /*border: solid 0 none;*/
+        border: none;
+        background-color: #fff;
+        border-radius: var(--big-margin);
+        font-size: 1rem;
+      }
+
+      table {
+        border-spacing: 0;
+        margin: 0 auto;
+        margin-bottom: var(--separator-margin);
+      }
+
+      tr,
+      td {
+        display: block;
+        height: var(--week-check-size);
+      }
+
+      td {
+        background-color: #fff;
+        width: var(--week-check-size);
+        border-radius: 50%;
+        border: solid var(--border-width) #444;
+        display: inline-block;
+        margin-right: var(--small-margin);
+      }
+
+      tr {
+        margin-top: var(--small-margin);
+      }
+
+      td:nth-of-type(4n) {
+        margin-right: var(--big-margin);
+      }
+
+      tr:nth-of-type(5n + 1) {
+        margin-top: var(--big-margin);
+      }
+
+      td:last-of-type,
+      tr:last-of-type,
+      tr:first-of-type {
+        margin: 0;
+      }
+
+      td[data-checked] {
+        background-color: #444;
+      }
+    </style>
   </body>
 </html>
